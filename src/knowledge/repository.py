@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from sqlalchemy import select, desc, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from .database import Incident, ActionLog, Service, Rule
+from .database import Incident, ActionLog, Service, Rule, SuggestedRule
 
 
 class IncidentRepository:
