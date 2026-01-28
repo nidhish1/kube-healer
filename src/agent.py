@@ -7,6 +7,7 @@ from datetime import datetime
 from .watchers.manager import WatcherManager
 from .watchers.base import LogEvent
 from .analyzer.rule_based_planner import RuleBasedPlanner
+from .analyzer.context_extractor import ContextExtractor
 from .executors.manager import ExecutorManager
 from .knowledge.database import DatabaseManager
 from .knowledge.repository import IncidentRepository, ActionLogRepository
@@ -29,6 +30,7 @@ class SelfHealingAgent:
         # Initialize components
         self.db_manager = DatabaseManager(self.config.database_url)
         self.planner = RuleBasedPlanner()
+        self.context_extractor = ContextExtractor(context_lines=self.config.analyzer.context_lines)
         self.executor_manager = ExecutorManager(dry_run=self.config.actions.get("global", {}).get("dry_run", False))
         self.notifier = Notifier(
             slack_webhook=self.config.notifications.slack_webhook if self.config.notifications.enabled else None,
@@ -72,14 +74,33 @@ class SelfHealingAgent:
         logger.info(f"📋 Detected event from {event.source}: {event.message[:100]}")
         
         try:
-            # Store incident
+            # Extract context and details
+            error_details = self.context_extractor.extract_error_details(event.message, event.source)
+            severity = error_details.get("severity", "medium")
+            component = error_details.get("component")
+            
+            # Build context string
+            context_parts = []
+            if error_details.get("error_code"):
+                context_parts.append(f"Error Code: {error_details['error_code']}")
+            if error_details.get("pid"):
+                context_parts.append(f"PID: {error_details['pid']}")
+            if error_details.get("port"):
+                context_parts.append(f"Port: {error_details['port']}")
+            if component:
+                context_parts.append(f"Component: {component}")
+            
+            context = " | ".join(context_parts) if context_parts else None
+            
+            # Store incident with extracted details
             async with self.db_manager.get_session() as session:
                 incident_repo = IncidentRepository(session)
                 incident = await incident_repo.create_incident(
                     source=event.source,
                     message=event.message,
                     error_type=event.matched_pattern,
-                    severity="medium"
+                    context=context,
+                    severity=severity
                 )
                 incident_id = incident.id
             

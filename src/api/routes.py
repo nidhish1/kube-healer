@@ -7,9 +7,10 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from datetime import datetime
 
-from ..knowledge.database import DatabaseManager
-from ..knowledge.repository import IncidentRepository, ActionLogRepository
+from ..knowledge.database import DatabaseManager, Rule
+from ..knowledge.repository import IncidentRepository, ActionLogRepository, RuleRepository
 from ..executors.manager import ExecutorManager
+from ..discovery.service_discovery import ServiceDiscovery
 from ..utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -54,6 +55,35 @@ class StatsResponse(BaseModel):
     total_actions: int
     successful_actions: int
     uptime_hours: float
+
+
+class RuleCreateRequest(BaseModel):
+    name: str
+    pattern: str
+    action_type: str
+    parameters: Optional[Dict[str, Any]] = None
+    priority: int = 50
+    enabled: bool = True
+
+
+class RuleUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    pattern: Optional[str] = None
+    action_type: Optional[str] = None
+    parameters: Optional[Dict[str, Any]] = None
+    priority: Optional[int] = None
+    enabled: Optional[bool] = None
+
+
+class RuleResponse(BaseModel):
+    id: int
+    name: str
+    pattern: str
+    action_type: str
+    parameters: Optional[str]
+    priority: int
+    enabled: bool
+    created_at: str
 
 
 # Routes
@@ -204,3 +234,156 @@ async def get_cooldowns():
         }
     
     return cooldowns
+
+
+# Rule Management Endpoints
+@app.get("/rules", response_model=List[RuleResponse])
+async def get_rules():
+    """Get all rules"""
+    if not db_manager:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    
+    async with db_manager.get_session() as session:
+        repo = RuleRepository(session)
+        rules = await repo.get_all_rules()
+        
+        return [
+            RuleResponse(
+                id=rule.id,
+                name=rule.name,
+                pattern=rule.pattern,
+                action_type=rule.action_type,
+                parameters=rule.parameters,
+                priority=rule.priority,
+                enabled=rule.enabled,
+                created_at=rule.created_at.isoformat()
+            )
+            for rule in rules
+        ]
+
+
+@app.post("/rules", response_model=RuleResponse)
+async def create_rule(request: RuleCreateRequest):
+    """Create a new rule"""
+    if not db_manager:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    
+    async with db_manager.get_session() as session:
+        repo = RuleRepository(session)
+        
+        try:
+            rule = await repo.create_rule(
+                name=request.name,
+                pattern=request.pattern,
+                action_type=request.action_type,
+                parameters=json.dumps(request.parameters) if request.parameters else None,
+                priority=request.priority,
+                enabled=request.enabled
+            )
+            
+            return RuleResponse(
+                id=rule.id,
+                name=rule.name,
+                pattern=rule.pattern,
+                action_type=rule.action_type,
+                parameters=rule.parameters,
+                priority=rule.priority,
+                enabled=rule.enabled,
+                created_at=rule.created_at.isoformat()
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.put("/rules/{rule_id}", response_model=RuleResponse)
+async def update_rule(rule_id: int, request: RuleUpdateRequest):
+    """Update an existing rule"""
+    if not db_manager:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    
+    async with db_manager.get_session() as session:
+        repo = RuleRepository(session)
+        
+        # Build update dict
+        updates = {}
+        if request.name is not None:
+            updates['name'] = request.name
+        if request.pattern is not None:
+            updates['pattern'] = request.pattern
+        if request.action_type is not None:
+            updates['action_type'] = request.action_type
+        if request.parameters is not None:
+            updates['parameters'] = json.dumps(request.parameters)
+        if request.priority is not None:
+            updates['priority'] = request.priority
+        if request.enabled is not None:
+            updates['enabled'] = request.enabled
+        
+        rule = await repo.update_rule(rule_id, **updates)
+        
+        if not rule:
+            raise HTTPException(status_code=404, detail="Rule not found")
+        
+        return RuleResponse(
+            id=rule.id,
+            name=rule.name,
+            pattern=rule.pattern,
+            action_type=rule.action_type,
+            parameters=rule.parameters,
+            priority=rule.priority,
+            enabled=rule.enabled,
+            created_at=rule.created_at.isoformat()
+        )
+
+
+@app.delete("/rules/{rule_id}")
+async def delete_rule(rule_id: int):
+    """Delete a rule"""
+    if not db_manager:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    
+    async with db_manager.get_session() as session:
+        repo = RuleRepository(session)
+        success = await repo.delete_rule(rule_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Rule not found")
+        
+        return {"success": True, "message": f"Rule {rule_id} deleted"}
+
+
+# Service Discovery Endpoints
+@app.get("/services/discover")
+async def discover_services():
+    """Discover all running services"""
+    discovery = ServiceDiscovery()
+    services = await discovery.discover_all()
+    
+    return [
+        {
+            "name": svc.name,
+            "type": svc.service_type,
+            "identifier": svc.identifier,
+            "status": svc.status,
+            "metadata": svc.metadata
+        }
+        for svc in services
+    ]
+
+
+@app.get("/services/docker")
+async def discover_docker_services():
+    """Discover Docker containers only"""
+    discovery = ServiceDiscovery()
+    services = await discovery.discover_docker_containers()
+    
+    return [
+        {
+            "name": svc.name,
+            "type": svc.service_type,
+            "identifier": svc.identifier,
+            "status": svc.status,
+            "metadata": svc.metadata
+        }
+        for svc in services
+    ]

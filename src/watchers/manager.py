@@ -2,6 +2,7 @@
 from typing import List, Callable, Awaitable
 from .base import BaseWatcher, LogEvent
 from .file_watcher import FileWatcher
+from .docker_watcher import DockerWatcher
 from ..utils.config import WatcherConfig
 from ..utils.logger import setup_logger
 
@@ -29,6 +30,14 @@ class WatcherManager:
             )
             self.watchers.append(watcher)
             logger.info(f"Added file watcher: {config.path}")
+        elif config.type == "docker":
+            watcher = DockerWatcher(
+                container_name=config.path,  # Use 'path' field as container name
+                patterns=config.patterns,
+                callback=self.callback
+            )
+            self.watchers.append(watcher)
+            logger.info(f"Added Docker watcher: {config.path}")
         else:
             logger.warning(f"Unknown watcher type: {config.type}")
     

@@ -143,3 +143,59 @@ class RuleRepository:
             .order_by(Rule.priority)
         )
         return list(result.scalars().all())
+    
+    async def get_all_rules(self) -> List[Rule]:
+        """Get all rules"""
+        result = await self.session.execute(
+            select(Rule).order_by(Rule.priority)
+        )
+        return list(result.scalars().all())
+    
+    async def create_rule(self, name: str, pattern: str, action_type: str,
+                         parameters: Optional[str] = None, priority: int = 50,
+                         enabled: bool = True) -> Rule:
+        """Create a new rule"""
+        rule = Rule(
+            name=name,
+            pattern=pattern,
+            action_type=action_type,
+            parameters=parameters,
+            priority=priority,
+            enabled=enabled
+        )
+        self.session.add(rule)
+        await self.session.commit()
+        await self.session.refresh(rule)
+        return rule
+    
+    async def update_rule(self, rule_id: int, **kwargs) -> Optional[Rule]:
+        """Update an existing rule"""
+        result = await self.session.execute(
+            select(Rule).where(Rule.id == rule_id)
+        )
+        rule = result.scalar_one_or_none()
+        
+        if not rule:
+            return None
+        
+        for key, value in kwargs.items():
+            if hasattr(rule, key):
+                setattr(rule, key, value)
+        
+        await self.session.commit()
+        await self.session.refresh(rule)
+        return rule
+    
+    async def delete_rule(self, rule_id: int) -> bool:
+        """Delete a rule"""
+        result = await self.session.execute(
+            select(Rule).where(Rule.id == rule_id)
+        )
+        rule = result.scalar_one_or_none()
+        
+        if not rule:
+            return False
+        
+        await self.session.delete(rule)
+        await self.session.commit()
+        return True

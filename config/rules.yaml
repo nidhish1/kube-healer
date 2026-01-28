@@ -1,0 +1,40 @@
+# Custom Healing Rules
+# These rules are loaded in addition to the built-in default rules
+
+rules:
+  # Example custom rule for Nginx errors
+  - name: nginx_502_errors
+    pattern: "(?i)(nginx.*502|upstream.*error)"
+    action: restart_service
+    parameters:
+      service_name: nginx
+      service_type: docker
+      grace_period: 5
+    reasoning: "Nginx 502 errors - restarting nginx proxy"
+    priority: 10
+    enabled: true
+  
+  # Example custom rule for Redis issues
+  - name: redis_maxmemory
+    pattern: "(?i)(redis.*maxmemory|redis.*oom)"
+    action: cleanup_cache
+    parameters:
+      cache_paths: ["/var/lib/redis"]
+    reasoning: "Redis max memory reached - clearing cache"
+    priority: 15
+    enabled: true
+  
+  # Example custom rule for application-specific errors
+  - name: application_crash
+    pattern: "(?i)(application.*crashed|fatal.*error|panic)"
+    action: restart_service
+    parameters:
+      service_name: app
+      service_type: docker
+      grace_period: 10
+    reasoning: "Application crashed - restarting"
+    priority: 20
+    enabled: true
+
+# Note: Lower priority numbers are matched first
+# Built-in rules have priority 50 (matched after custom rules)
