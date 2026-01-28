@@ -198,12 +198,12 @@ class ServiceRestartExecutor(BaseExecutor):
         """Restart a Kubernetes pod (delete and let controller recreate)"""
         # This would require kubernetes Python client
         # For now, return a placeholder that it's not implemented
-            return ExecutionResult(
-                success=False,
-                message="Kubernetes restart not yet implemented",
-                error="Install kubernetes Python client and implement K8s API calls",
-                duration_seconds=time.time() - start_time
-            )
+        return ExecutionResult(
+            success=False,
+            message="Kubernetes restart not yet implemented",
+            error="Install kubernetes Python client and implement K8s API calls",
+            duration_seconds=time.time() - start_time
+        )
 
 
 # Try to import psutil, but make it optional
