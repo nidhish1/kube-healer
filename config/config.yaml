@@ -1,0 +1,49 @@
+# Self-Healing DevOps Agent Configuration
+# NO AI REQUIRED - Uses rule-based detection
+
+watchers:
+  # Watch a test log file (will be created in container)
+  - type: file
+    path: /tmp/test-app.log
+    patterns:
+      - "ERROR.*"
+      - "FATAL.*"
+      - "Exception.*"
+      - "(?i)out of memory"
+      - "(?i)disk full"
+      - "(?i)connection refused"
+    follow: true
+
+analyzer:
+  # Using rule-based planner - no API key needed
+  llm_provider: none
+  model: none
+  temperature: 0.2
+  max_tokens: 500
+  enable_context_extraction: true
+  enable_similarity_search: false
+
+actions:
+  service_restart:
+    enabled: true
+    cooldown: 300
+    max_retries: 3
+    dry_run: false
+    require_approval: false
+
+  disk_cleanup:
+    enabled: true
+    paths:
+      - /tmp
+    keep_days: 7
+    min_free_gb: 5
+    cooldown: 3600
+    dry_run: false
+
+alerts:
+  slack_webhook: null
+  discord_webhook: null
+  notify_on:
+    - action_taken
+    - action_failed
+    - high_severity

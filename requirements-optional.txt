@@ -1,0 +1,12 @@
+# Optional dependencies for advanced features
+# These require Python 3.11 or 3.12 (not compatible with 3.14 yet)
+
+# Vector similarity search (for finding similar past incidents)
+chromadb==0.4.22
+
+# LangChain for advanced LLM orchestration
+langchain==0.1.4
+langchain-openai==0.0.5
+langchain-community==0.0.17
+
+# Install with: pip install -r requirements-optional.txt
