@@ -63,6 +63,11 @@
         .navbar .nav-actions {
             display: flex;
             gap: 10px;
+            align-items: center;
+        }
+        
+        .navbar .container > div:first-child p {
+            margin: 0;
         }
         
         .nav-btn {
@@ -502,12 +507,18 @@
 <body>
     <div class="navbar">
         <div class="container">
-            <h1>🛡️ Kube-Healer</h1>
+            <div>
+                <h1>🛡️ Kube-Healer</h1>
+                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #666;">Self-Healing DevOps Agent - Live Dashboard</p>
+            </div>
             <div class="nav-actions">
                 <div class="status-indicator">
                     <div class="status-dot online"></div>
                     <span>Live</span>
                 </div>
+                <button class="nav-btn" onclick="window.open('https://github.com/nidhish1/kube-healer', '_blank')">
+                    ⭐ GitHub
+                </button>
                 <button class="nav-btn" onclick="window.location.href='/docs'">📚 API Docs</button>
                 <button class="nav-btn" onclick="refreshAll()">🔄 Refresh</button>
             </div>
@@ -639,6 +650,45 @@
                     <button class="action-btn secondary" onclick="showIncidentDetails()">
                         📊 View All Data
                     </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Info Footer -->
+        <div class="card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: center;">
+                <div>
+                    <h2 style="color: white; margin-bottom: 15px;">📦 About This Dashboard</h2>
+                    <p style="margin-bottom: 10px; opacity: 0.95;">
+                        This is the <strong>Live Web UI</strong> for Kube-Healer - a self-healing DevOps agent that automatically 
+                        detects and fixes common infrastructure issues.
+                    </p>
+                    <p style="margin-bottom: 15px; opacity: 0.9; font-size: 0.95em;">
+                        Built with <strong>Python 3.11+</strong>, <strong>FastAPI</strong>, <strong>Chart.js</strong>, and <strong>SQLite</strong>. 
+                        Features real-time monitoring, auto-remediation, incident tracking, and beautiful data visualization.
+                    </p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="action-btn secondary" style="background: white; color: var(--primary); border: none;" 
+                                onclick="window.open('https://github.com/nidhish1/kube-healer', '_blank')">
+                            🌟 Star on GitHub
+                        </button>
+                        <button class="action-btn secondary" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white;" 
+                                onclick="window.open('https://github.com/nidhish1/kube-healer/blob/main/src/api/dashboard.html', '_blank')">
+                            💻 View Dashboard Code
+                        </button>
+                        <button class="action-btn secondary" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white;" 
+                                onclick="window.open('https://github.com/nidhish1/kube-healer#readme', '_blank')">
+                            📖 Documentation
+                        </button>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 4em; margin-bottom: 10px; opacity: 0.3;">🛡️</div>
+                    <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 5px;">Kube-Healer</div>
+                    <div style="opacity: 0.8; font-size: 0.9em;">Self-Healing DevOps Agent</div>
+                    <div style="margin-top: 15px; opacity: 0.7; font-size: 0.85em;">
+                        MIT License • Open Source
+                    </div>
                 </div>
             </div>
         </div>
