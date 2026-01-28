@@ -107,7 +107,13 @@
         }
         
         .grid-4 {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        @media (max-width: 968px) {
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
         .card {
@@ -408,18 +414,21 @@
             to { transform: rotate(360deg); }
         }
         
-        /* AI Suggestions Styles */
+        /* AI Suggestions Styles - More Obvious */
         .suggestion-card {
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
         
         .suggestion-card.high-confidence {
             border-color: var(--success);
+            border-width: 4px;
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
         }
         
         .suggestion-header {
@@ -878,60 +887,67 @@
         
         <!-- Main Content Grid -->
         <div class="grid grid-2">
-            <!-- Recent Incidents -->
-            <div class="card">
-                <h2>📋 Recent Incidents</h2>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Error</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="incidents-table">
-                            <tr>
-                                <td colspan="3" class="loading">
-                                    <div class="spinner"></div>
-                                    Loading incidents...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Left Column: Incidents & Actions Combined -->
+            <div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 style="margin-bottom: 15px;">📋 Recent Incidents</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Error</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="incidents-table">
+                                <tr>
+                                    <td colspan="3" class="loading">
+                                        <div class="spinner"></div>
+                                        Loading incidents...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 style="margin-bottom: 15px;">⚡ Recent Actions</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="actions-table">
+                                <tr>
+                                    <td colspan="3" class="loading">
+                                        <div class="spinner"></div>
+                                        Loading actions...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
-            <!-- Recent Actions -->
-            <div class="card">
-                <h2>⚡ Recent Actions</h2>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Action</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="actions-table">
-                            <tr>
-                                <td colspan="3" class="loading">
-                                    <div class="spinner"></div>
-                                    Loading actions...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Right Column: Charts & Actions -->
+            <div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 style="margin-bottom: 15px;">📈 Activity Chart</h2>
+                    <div class="chart-container">
+                        <canvas id="incidentsChart"></canvas>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Cooldowns & Actions Row -->
-        <div class="grid grid-2">
-            <div class="card">
-                <h2>⏱️ Action Cooldowns</h2>
-                <div id="cooldowns-list">
+                
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 style="margin-bottom: 15px;">⏱️ Cooldowns</h2>
+                    <div id="cooldowns-list">
                     <div class="loading">
                         <div class="spinner"></div>
                         Loading cooldowns...
@@ -1374,13 +1390,20 @@
                 const container = document.getElementById('ai-suggestions-list');
                 
                 if (suggestions.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="icon">🤖</div>
-                            <p>No AI suggestions yet</p>
-                            <small>Click "Analyze Now" to have AI suggest new rules based on unhandled errors</small>
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, #f8f9fa, #ffffff); border-radius: 10px; border: 2px dashed #ccc;">
+                        <div style="font-size: 4em; margin-bottom: 15px;">🤖</div>
+                        <h3 style="color: #333; margin-bottom: 10px;">No AI Suggestions Yet</h3>
+                        <p style="color: #666; margin-bottom: 20px; font-size: 1.1em;">
+                            AI will automatically analyze recurring errors and suggest new healing rules.
+                        </p>
+                        <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 15px; margin: 20px auto; max-width: 500px;">
+                            <strong>🔑 AI Disabled:</strong> Add <code>GEMINI_API_KEY</code> to .env file
+                            <br>
+                            <small>Get FREE key at <a href="https://ai.google.dev/" target="_blank" style="color: #667eea;">ai.google.dev</a></small>
                         </div>
-                    `;
+                    </div>
+                `;
                     return;
                 }
                 
@@ -1443,9 +1466,24 @@
             } catch (error) {
                 console.error('Error loading suggestions:', error);
                 document.getElementById('ai-suggestions-list').innerHTML = `
-                    <div class="empty-state">
-                        <p>AI feature not available</p>
-                        <small>Configure GEMINI_API_KEY to enable AI suggestions</small>
+                    <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, #f8f9fa, #ffffff); border-radius: 10px; border: 2px dashed #ccc;">
+                        <div style="font-size: 4em; margin-bottom: 15px;">🤖</div>
+                        <h3 style="color: #333; margin-bottom: 10px;">AI Features Not Configured</h3>
+                        <p style="color: #666; margin-bottom: 20px; font-size: 1.1em;">
+                            Get intelligent rule suggestions, chat support, and root cause analysis.
+                        </p>
+                        <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 20px auto; max-width: 600px; text-align: left;">
+                            <h4 style="margin: 0 0 10px 0; color: #333;">⚡ Quick Setup (2 minutes):</h4>
+                            <ol style="margin: 0; padding-left: 20px; line-height: 1.8;">
+                                <li>Visit <a href="https://ai.google.dev/" target="_blank" style="color: #667eea; font-weight: bold;">ai.google.dev</a></li>
+                                <li>Click "Get API key" (FREE!)</li>
+                                <li>Copy key → Add to <code>.env</code> file</li>
+                                <li>Restart server → AI unlocked! ✨</li>
+                            </ol>
+                        </div>
+                        <p style="color: #999; font-size: 0.9em; margin-top: 15px;">
+                            💡 The agent works fine without AI using 21 built-in rules. AI adds smart features!
+                        </p>
                     </div>
                 `;
             }
