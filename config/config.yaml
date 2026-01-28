@@ -15,13 +15,25 @@ watchers:
     follow: true
 
 analyzer:
-  # Using rule-based planner - no API key needed
-  llm_provider: none
-  model: none
+  # LLM Configuration
+  # Options: none (rule-based only), gemini, openai, anthropic
+  llm_provider: gemini
+  model: gemini-pro
   temperature: 0.2
   max_tokens: 500
   enable_context_extraction: true
+  context_lines: 50
   enable_similarity_search: false
+  
+  # AI Features (requires API key)
+  enable_ai_fallback: true  # Use AI when no rule matches
+  enable_rule_suggestions: true  # AI suggests new rules
+  enable_chat: true  # Chat interface for questions
+  
+  # Safety Settings
+  ai_auto_approve_threshold: 0.95  # Only auto-execute AI suggestions with 95%+ confidence
+  suggestion_batch_size: 10  # Analyze N unhandled errors at once
+  suggestion_interval_hours: 24  # How often to automatically analyze errors
 
 actions:
   service_restart:

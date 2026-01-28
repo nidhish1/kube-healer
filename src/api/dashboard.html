@@ -408,6 +408,297 @@
             to { transform: rotate(360deg); }
         }
         
+        /* AI Suggestions Styles */
+        .suggestion-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        .suggestion-card.high-confidence {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+        }
+        
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .suggestion-pattern {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        
+        .confidence-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .confidence-high {
+            background: var(--success);
+            color: white;
+        }
+        
+        .confidence-medium {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .confidence-low {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .suggestion-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-approve {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .btn-approve:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+        
+        .btn-reject {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-reject:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+        
+        .example-errors {
+            background: #f9fafb;
+            border-left: 3px solid var(--primary);
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        .example-errors ul {
+            margin: 5px 0 0 0;
+            padding-left: 20px;
+        }
+        
+        /* Chat Interface Styles */
+        .chat-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .chat-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(0,0,0,0.3);
+        }
+        
+        .chat-panel {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 1001;
+        }
+        
+        .chat-panel.show {
+            display: flex;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .chat-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .chat-message {
+            margin-bottom: 15px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .chat-message.user {
+            text-align: right;
+        }
+        
+        .chat-message .message-content {
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .chat-message.user .message-content {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .chat-message.ai .message-content {
+            background: white;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .chat-send {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .chat-send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .chat-typing {
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            display: inline-block;
+        }
+        
+        .chat-typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .chat-typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .chat-typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .chat-panel {
+                width: calc(100% - 40px);
+                height: calc(100% - 40px);
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+        
         .timestamp {
             color: #999;
             font-size: 0.85em;
@@ -567,6 +858,20 @@
                 <h2>🎯 Action Success Rate</h2>
                 <div class="chart-container">
                     <canvas id="actionsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Suggestions Section -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>🤖 AI Rule Suggestions</h2>
+                <button class="nav-btn" onclick="triggerAIAnalysis()">🔍 Analyze Now</button>
+            </div>
+            <div id="ai-suggestions-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading AI suggestions...
                 </div>
             </div>
         </div>
@@ -987,9 +1292,39 @@
                             <p><strong>Status:</strong> ${incident.resolved ? 'Resolved' : 'Pending'}</p>
                             <p><strong>Message:</strong></p>
                             <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">${incident.message}</pre>
+                            <div style="margin-top: 20px;">
+                                <button class="nav-btn" onclick="analyzeRootCause(${incident.id})" style="width: 100%;">
+                                    🔍 Analyze Root Cause with AI
+                                </button>
+                            </div>
+                            <div id="root-cause-${incident.id}" style="margin-top: 15px;"></div>
                         `;
                     }
                 });
+        }
+        
+        async function analyzeRootCause(incidentId) {
+            const container = document.getElementById(`root-cause-${incidentId}`);
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>AI analyzing root cause...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/incidents/${incidentId}/root-cause`);
+                const result = await response.json();
+                
+                container.innerHTML = `
+                    <div style="background: #f0fdf4; border-left: 4px solid var(--success); padding: 15px; border-radius: 5px;">
+                        <strong>🤖 AI Root Cause Analysis:</strong>
+                        <div style="margin-top: 10px; white-space: pre-wrap;">${result.root_cause_analysis}</div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `
+                    <div style="background: #fef2f2; border-left: 4px solid var(--danger); padding: 15px; border-radius: 5px;">
+                        <strong>❌ Analysis Failed:</strong>
+                        <div style="margin-top: 10px;">AI feature not available. Make sure GEMINI_API_KEY is configured.</div>
+                    </div>
+                `;
+            }
         }
         
         function showActionDetails(id) {
@@ -1026,8 +1361,244 @@
             fetchIncidents();
             fetchActions();
             fetchCooldowns();
+            loadAISuggestions();
             showNotification('Dashboard refreshed', 'success');
         }
+        
+        // AI Suggestions Functions
+        async function loadAISuggestions() {
+            try {
+                const response = await fetch(`${API_BASE}/ai/suggestions?status=pending`);
+                const suggestions = await response.json();
+                
+                const container = document.getElementById('ai-suggestions-list');
+                
+                if (suggestions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">🤖</div>
+                            <p>No AI suggestions yet</p>
+                            <small>Click "Analyze Now" to have AI suggest new rules based on unhandled errors</small>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = suggestions.map(s => {
+                    const confidence = s.confidence * 100;
+                    let confidenceClass = 'low';
+                    let confidenceBadge = '⭐';
+                    
+                    if (confidence >= 80) {
+                        confidenceClass = 'high';
+                        confidenceBadge = '⭐⭐⭐⭐';
+                    } else if (confidence >= 60) {
+                        confidenceClass = 'medium';
+                        confidenceBadge = '⭐⭐⭐';
+                    } else {
+                        confidenceBadge = '⭐⭐';
+                    }
+                    
+                    const examples = JSON.parse(s.example_errors);
+                    const params = JSON.parse(s.parameters);
+                    
+                    return `
+                        <div class="suggestion-card ${confidence >= 80 ? 'high-confidence' : ''}">
+                            <div class="suggestion-header">
+                                <div>
+                                    <strong>${s.action_type.replace(/_/g, ' ').toUpperCase()}</strong>
+                                    <div class="timestamp">Suggested ${new Date(s.created_at).toLocaleString()}</div>
+                                </div>
+                                <span class="confidence-badge confidence-${confidenceClass}">
+                                    ${confidence.toFixed(0)}% ${confidenceBadge}
+                                </span>
+                            </div>
+                            
+                            <div><strong>Pattern:</strong></div>
+                            <div class="suggestion-pattern">${s.pattern}</div>
+                            
+                            <div><strong>Reasoning:</strong> ${s.reasoning}</div>
+                            
+                            <div><strong>Action Parameters:</strong></div>
+                            <div class="suggestion-pattern">${JSON.stringify(params, null, 2)}</div>
+                            
+                            <div class="example-errors">
+                                <strong>Based on ${examples.length} similar error(s):</strong>
+                                <ul>
+                                    ${examples.slice(0, 3).map(e => `<li>${e.substring(0, 100)}...</li>`).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div class="suggestion-actions">
+                                <button class="btn-approve" onclick="approveSuggestion(${s.id})">
+                                    ✅ Approve & Activate
+                                </button>
+                                <button class="btn-reject" onclick="rejectSuggestion(${s.id})">
+                                    ❌ Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading suggestions:', error);
+                document.getElementById('ai-suggestions-list').innerHTML = `
+                    <div class="empty-state">
+                        <p>AI feature not available</p>
+                        <small>Configure GEMINI_API_KEY to enable AI suggestions</small>
+                    </div>
+                `;
+            }
+        }
+        
+        async function approveSuggestion(id) {
+            if (!confirm('Approve this suggestion and create an active rule?')) return;
+            
+            showNotification('Activating rule...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/suggestions/${id}/approve`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`✅ Rule activated!`, 'success');
+                    loadAISuggestions();
+                    refreshAll();
+                } else {
+                    showNotification(`❌ Failed to activate rule`, 'error');
+                }
+            } catch (error) {
+                showNotification(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function rejectSuggestion(id) {
+            if (!confirm('Dismiss this suggestion?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/suggestions/${id}/reject`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Suggestion dismissed', 'info');
+                    loadAISuggestions();
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function triggerAIAnalysis() {
+            if (!confirm('Trigger AI analysis of unhandled errors? This may take a moment.')) return;
+            
+            showNotification('🤖 AI analyzing unhandled errors...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/analyze-unhandled`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`✅ Created ${result.suggestions_created} new suggestion(s)`, 'success');
+                    setTimeout(() => loadAISuggestions(), 1000);
+                } else {
+                    showNotification('No new suggestions created', 'info');
+                }
+            } catch (error) {
+                showNotification(`❌ Analysis failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Chat Functions
+        function toggleChat() {
+            const panel = document.getElementById('chat-panel');
+            panel.classList.toggle('show');
+            
+            if (panel.classList.contains('show')) {
+                document.getElementById('chat-input-field').focus();
+            }
+        }
+        
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input-field');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // Show typing indicator
+            addTypingIndicator();
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const result = await response.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Add AI response
+                addChatMessage(result.answer, 'ai');
+            } catch (error) {
+                removeTypingIndicator();
+                addChatMessage('Sorry, I encountered an error. Make sure GEMINI_API_KEY is configured.', 'ai');
+            }
+        }
+        
+        function addChatMessage(text, type) {
+            const container = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}`;
+            messageDiv.innerHTML = `
+                <div class="message-content">${text}</div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function addTypingIndicator() {
+            const container = document.getElementById('chat-messages');
+            const typing = document.createElement('div');
+            typing.className = 'chat-message ai';
+            typing.id = 'typing-indicator';
+            typing.innerHTML = `
+                <div class="chat-typing">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            container.appendChild(typing);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
+        
+        // Allow Enter key to send message
+        window.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('chat-input-field');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChatMessage();
+                    }
+                });
+            }
+        });
         
         // Initial load
         initCharts();
@@ -1039,7 +1610,35 @@
             fetchIncidents();
             fetchActions();
             fetchCooldowns();
+            loadAISuggestions();
         }, 10000);
+        
+        // Load AI suggestions initially
+        loadAISuggestions();
     </script>
+    
+    <!-- Chat Button -->
+    <button class="chat-button" onclick="toggleChat()" title="Ask AI">💬</button>
+    
+    <!-- Chat Panel -->
+    <div id="chat-panel" class="chat-panel">
+        <div class="chat-header">
+            <h3>🤖 AI Assistant</h3>
+            <button class="chat-close" onclick="toggleChat()">×</button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="chat-message ai">
+                <div class="message-content">
+                    Hi! I'm your AI assistant. Ask me anything about your incidents, errors, or system health.
+                    <br><br>
+                    Try: "Why did the database restart 3 times today?" or "What's causing the most errors?"
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chat-input-field" class="chat-input" placeholder="Ask about incidents...">
+            <button class="chat-send" onclick="sendChatMessage()">Send</button>
+        </div>
+    </div>
 </body>
 </html>

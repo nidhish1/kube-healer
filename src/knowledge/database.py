@@ -67,6 +67,22 @@ class Rule(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class SuggestedRule(Base):
+    """AI-suggested healing rules awaiting approval"""
+    __tablename__ = "suggested_rules"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    pattern = Column(String(500), nullable=False)
+    action_type = Column(String(100), nullable=False)
+    parameters = Column(Text, nullable=False)  # JSON
+    confidence = Column(Float, nullable=False)
+    reasoning = Column(Text, nullable=False)
+    example_errors = Column(Text, nullable=False)  # JSON array
+    status = Column(String(20), default="pending")  # pending, approved, rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+    reviewed_at = Column(DateTime)
+
+
 class DatabaseManager:
     """Manage database connections"""
     

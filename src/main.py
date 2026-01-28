@@ -35,6 +35,8 @@ async def run_with_api(config_path: str = "config/config.yaml", host: str = "0.0
     # Set global state for API
     routes.db_manager = agent.db_manager
     routes.executor_manager = agent.executor_manager
+    routes.gemini_client = agent.gemini_client
+    routes.ai_suggester = agent.ai_suggester
     
     # Run API server
     logger.info(f"🌐 Starting API server on {host}:{port}")

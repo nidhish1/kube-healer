@@ -199,3 +199,84 @@ class RuleRepository:
         await self.session.delete(rule)
         await self.session.commit()
         return True
+
+
+class SuggestedRuleRepository:
+    """Manage AI-suggested rules"""
+    
+    def __init__(self, session: AsyncSession):
+        self.session = session
+    
+    async def create_suggestion(self, pattern: str, action_type: str, parameters: str,
+                               confidence: float, reasoning: str, example_errors: str) -> SuggestedRule:
+        """Create a new rule suggestion"""
+        suggestion = SuggestedRule(
+            pattern=pattern,
+            action_type=action_type,
+            parameters=parameters,
+            confidence=confidence,
+            reasoning=reasoning,
+            example_errors=example_errors,
+            status="pending"
+        )
+        self.session.add(suggestion)
+        await self.session.commit()
+        await self.session.refresh(suggestion)
+        return suggestion
+    
+    async def get_pending_suggestions(self) -> List[SuggestedRule]:
+        """Get all pending suggestions"""
+        result = await self.session.execute(
+            select(SuggestedRule)
+            .where(SuggestedRule.status == "pending")
+            .order_by(SuggestedRule.confidence.desc(), SuggestedRule.created_at.desc())
+        )
+        return list(result.scalars().all())
+    
+    async def get_all_suggestions(self) -> List[SuggestedRule]:
+        """Get all suggestions"""
+        result = await self.session.execute(
+            select(SuggestedRule).order_by(SuggestedRule.created_at.desc())
+        )
+        return list(result.scalars().all())
+    
+    async def get_suggestion(self, suggestion_id: int) -> Optional[SuggestedRule]:
+        """Get a specific suggestion"""
+        result = await self.session.execute(
+            select(SuggestedRule).where(SuggestedRule.id == suggestion_id)
+        )
+        return result.scalar_one_or_none()
+    
+    async def approve_suggestion(self, suggestion_id: int) -> Optional[SuggestedRule]:
+        """Approve a suggestion and mark it as reviewed"""
+        suggestion = await self.get_suggestion(suggestion_id)
+        if not suggestion:
+            return None
+        
+        suggestion.status = "approved"
+        suggestion.reviewed_at = datetime.utcnow()
+        await self.session.commit()
+        await self.session.refresh(suggestion)
+        return suggestion
+    
+    async def reject_suggestion(self, suggestion_id: int) -> Optional[SuggestedRule]:
+        """Reject a suggestion"""
+        suggestion = await self.get_suggestion(suggestion_id)
+        if not suggestion:
+            return None
+        
+        suggestion.status = "rejected"
+        suggestion.reviewed_at = datetime.utcnow()
+        await self.session.commit()
+        await self.session.refresh(suggestion)
+        return suggestion
+    
+    async def delete_suggestion(self, suggestion_id: int) -> bool:
+        """Delete a suggestion"""
+        suggestion = await self.get_suggestion(suggestion_id)
+        if not suggestion:
+            return False
+        
+        await self.session.delete(suggestion)
+        await self.session.commit()
+        return True

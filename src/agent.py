@@ -8,12 +8,17 @@ from .watchers.manager import WatcherManager
 from .watchers.base import LogEvent
 from .analyzer.rule_based_planner import RuleBasedPlanner
 from .analyzer.context_extractor import ContextExtractor
+from .analyzer.gemini_client import GeminiClient
+from .analyzer.ai_rule_suggester import AIRuleSuggester
 from .executors.manager import ExecutorManager
 from .knowledge.database import DatabaseManager
-from .knowledge.repository import IncidentRepository, ActionLogRepository
+from .knowledge.repository import IncidentRepository, ActionLogRepository, SuggestedRuleRepository
 from .utils.config import load_config, AppConfig
 from .utils.notifier import Notifier
 from .utils.logger import setup_logger
+from .analyzer.rule_based_planner import ActionPlan
+import os
+import json
 
 logger = setup_logger(__name__)
 
@@ -31,6 +36,25 @@ class SelfHealingAgent:
         self.db_manager = DatabaseManager(self.config.database_url)
         self.planner = RuleBasedPlanner()
         self.context_extractor = ContextExtractor(context_lines=self.config.analyzer.context_lines)
+        
+        # Initialize AI components if API key is available
+        gemini_api_key = os.getenv('GEMINI_API_KEY')
+        self.gemini_client = None
+        self.ai_suggester = None
+        
+        if gemini_api_key and gemini_api_key != 'your-gemini-api-key-here':
+            try:
+                self.gemini_client = GeminiClient(api_key=gemini_api_key)
+                self.ai_suggester = AIRuleSuggester(
+                    db_manager=self.db_manager,
+                    gemini_client=self.gemini_client
+                )
+                logger.info("✨ AI features enabled with Gemini")
+            except Exception as e:
+                logger.warning(f"AI features disabled: {e}")
+        else:
+            logger.info("AI features disabled - no Gemini API key configured")
+        
         self.executor_manager = ExecutorManager(dry_run=self.config.actions.get("global", {}).get("dry_run", False))
         self.notifier = Notifier(
             slack_webhook=self.config.notifications.slack_webhook if self.config.notifications.enabled else None,
