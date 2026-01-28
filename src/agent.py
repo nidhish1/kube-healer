@@ -1,0 +1,135 @@
+"""Main self-healing agent"""
+import asyncio
+import json
+from typing import Optional
+from datetime import datetime
+
+from .watchers.manager import WatcherManager
+from .watchers.base import LogEvent
+from .analyzer.rule_based_planner import RuleBasedPlanner
+from .executors.manager import ExecutorManager
+from .knowledge.database import DatabaseManager
+from .knowledge.repository import IncidentRepository, ActionLogRepository
+from .utils.config import load_config, AppConfig
+from .utils.notifier import Notifier
+from .utils.logger import setup_logger
+
+logger = setup_logger(__name__)
+
+
+class SelfHealingAgent:
+    """Main self-healing agent orchestrator"""
+    
+    def __init__(self, config_path: str = "config/config.yaml"):
+        logger.info("🤖 Initializing Self-Healing Agent...")
+        
+        # Load configuration
+        self.config = load_config(config_path)
+        
+        # Initialize components
+        self.db_manager = DatabaseManager(self.config.database_url)
+        self.planner = RuleBasedPlanner()
+        self.executor_manager = ExecutorManager(dry_run=self.config.actions.get("global", {}).get("dry_run", False))
+        self.notifier = Notifier(
+            slack_webhook=self.config.notifications.slack_webhook if self.config.notifications.enabled else None,
+            discord_webhook=self.config.notifications.discord_webhook if self.config.notifications.enabled else None
+        )
+        self.watcher_manager = WatcherManager(callback=self.handle_log_event)
+        
+        # Setup cooldowns
+        for action_type, action_config in self.config.actions.items():
+            if action_type != "global":
+                self.executor_manager.set_cooldown(action_type, action_config.cooldown_seconds)
+        
+        # Add watchers from config
+        for watcher_config in self.config.watchers:
+            self.watcher_manager.add_watcher_from_config(watcher_config)
+        
+        logger.info("✅ Agent initialized successfully")
+    
+    async def start(self):
+        """Start the agent"""
+        logger.info("🚀 Starting Self-Healing Agent...")
+        
+        # Initialize database
+        await self.db_manager.init_db()
+        logger.info("✅ Database initialized")
+        
+        # Start watchers
+        await self.watcher_manager.start_all()
+        logger.info("✅ Watchers started")
+        
+        logger.info("🛡️  Self-Healing Agent is now active and monitoring...")
+    
+    async def stop(self):
+        """Stop the agent"""
+        logger.info("🛑 Stopping Self-Healing Agent...")
+        await self.watcher_manager.stop_all()
+        logger.info("✅ Agent stopped")
+    
+    async def handle_log_event(self, event: LogEvent):
+        """Handle detected log event"""
+        logger.info(f"📋 Detected event from {event.source}: {event.message[:100]}")
+        
+        try:
+            # Store incident
+            async with self.db_manager.get_session() as session:
+                incident_repo = IncidentRepository(session)
+                incident = await incident_repo.create_incident(
+                    source=event.source,
+                    message=event.message,
+                    error_type=event.matched_pattern,
+                    severity="medium"
+                )
+                incident_id = incident.id
+            
+            # Analyze and plan
+            logger.info("🔍 Analyzing with rule-based planner...")
+            plan = await self.planner.analyze_and_plan(event.message)
+            
+            if not plan:
+                logger.info("ℹ️  No action plan generated")
+                return
+            
+            logger.info(f"📝 Action plan: {plan.action_type} - {plan.reasoning}")
+            
+            # Execute action
+            logger.info(f"⚡ Executing action: {plan.action_type}")
+            result = await self.executor_manager.execute_action(
+                action_type=plan.action_type,
+                parameters=plan.parameters
+            )
+            
+            # Log action
+            async with self.db_manager.get_session() as session:
+                action_repo = ActionLogRepository(session)
+                await action_repo.create_action_log(
+                    action_type=plan.action_type,
+                    parameters=json.dumps(plan.parameters),
+                    incident_id=incident_id,
+                    success=result.success,
+                    output=result.output,
+                    duration_seconds=result.duration_seconds,
+                    error_message=result.error
+                )
+            
+            # Update incident
+            if result.success:
+                async with self.db_manager.get_session() as session:
+                    incident_repo = IncidentRepository(session)
+                    await incident_repo.mark_resolved(incident_id, plan.action_type)
+                logger.info(f"✅ Action completed: {result.message}")
+            else:
+                logger.error(f"❌ Action failed: {result.message}")
+            
+            # Send notification
+            if self.config.notifications.enabled:
+                severity = "success" if result.success else "error"
+                await self.notifier.send_notification(
+                    title="Auto-Healing Action",
+                    message=f"Action: {plan.action_type}\nResult: {result.message}",
+                    severity=severity
+                )
+        
+        except Exception as e:
+            logger.error(f"❌ Error handling log event: {e}", exc_info=True)

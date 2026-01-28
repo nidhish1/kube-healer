@@ -1,0 +1,33 @@
+# Core Dependencies
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.9.0
+pydantic-settings>=2.5.2
+
+# Database
+sqlalchemy>=2.0.36
+aiosqlite>=0.20.0
+
+# Monitoring & Logging
+watchdog>=5.0.0
+psutil>=6.1.0
+
+# Configuration
+pyyaml>=6.0.2
+python-dotenv>=1.0.1
+
+# HTTP Client
+requests>=2.32.3
+httpx>=0.27.0
+
+# AI/LLM (Optional - for AI features)
+openai>=1.50.0
+anthropic>=0.39.0
+
+# Metrics (Optional)
+prometheus-client>=0.21.0
+
+# Docker/K8s (Optional)
+docker>=7.1.0
+kubernetes>=31.0.0
+paramiko>=3.5.0

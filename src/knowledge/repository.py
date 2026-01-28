@@ -1,0 +1,145 @@
+"""Repository pattern for database operations"""
+from datetime import datetime, timedelta
+from typing import List, Optional, Dict, Any
+from sqlalchemy import select, desc, and_
+from sqlalchemy.ext.asyncio import AsyncSession
+from .database import Incident, ActionLog, Service, Rule
+
+
+class IncidentRepository:
+    """Manage incidents"""
+    
+    def __init__(self, session: AsyncSession):
+        self.session = session
+    
+    async def create_incident(self, source: str, message: str, error_type: Optional[str] = None,
+                             context: Optional[str] = None, severity: str = "medium") -> Incident:
+        """Create new incident"""
+        incident = Incident(
+            source=source,
+            message=message,
+            error_type=error_type,
+            context=context,
+            severity=severity
+        )
+        self.session.add(incident)
+        await self.session.commit()
+        await self.session.refresh(incident)
+        return incident
+    
+    async def get_recent_incidents(self, hours: int = 24, limit: int = 100) -> List[Incident]:
+        """Get recent incidents"""
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        result = await self.session.execute(
+            select(Incident)
+            .where(Incident.timestamp >= cutoff)
+            .order_by(desc(Incident.timestamp))
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+    
+    async def mark_resolved(self, incident_id: int, action_taken: str):
+        """Mark incident as resolved"""
+        result = await self.session.execute(
+            select(Incident).where(Incident.id == incident_id)
+        )
+        incident = result.scalar_one_or_none()
+        if incident:
+            incident.resolved = True
+            incident.resolution_time = datetime.utcnow()
+            incident.action_taken = action_taken
+            await self.session.commit()
+
+
+class ActionLogRepository:
+    """Manage action logs"""
+    
+    def __init__(self, session: AsyncSession):
+        self.session = session
+    
+    async def create_action_log(self, action_type: str, parameters: Optional[str] = None,
+                               incident_id: Optional[int] = None, success: bool = False,
+                               output: Optional[str] = None, duration_seconds: Optional[float] = None,
+                               error_message: Optional[str] = None) -> ActionLog:
+        """Create action log"""
+        log = ActionLog(
+            incident_id=incident_id,
+            action_type=action_type,
+            parameters=parameters,
+            success=success,
+            output=output,
+            duration_seconds=duration_seconds,
+            error_message=error_message
+        )
+        self.session.add(log)
+        await self.session.commit()
+        await self.session.refresh(log)
+        return log
+    
+    async def get_recent_actions(self, limit: int = 50) -> List[ActionLog]:
+        """Get recent action logs"""
+        result = await self.session.execute(
+            select(ActionLog)
+            .order_by(desc(ActionLog.timestamp))
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+    
+    async def get_last_action_time(self, action_type: str) -> Optional[datetime]:
+        """Get timestamp of last action execution"""
+        result = await self.session.execute(
+            select(ActionLog.timestamp)
+            .where(ActionLog.action_type == action_type)
+            .order_by(desc(ActionLog.timestamp))
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
+
+class ServiceRepository:
+    """Manage services"""
+    
+    def __init__(self, session: AsyncSession):
+        self.session = session
+    
+    async def get_or_create_service(self, name: str, service_type: str, identifier: str) -> Service:
+        """Get existing or create new service"""
+        result = await self.session.execute(
+            select(Service).where(Service.name == name)
+        )
+        service = result.scalar_one_or_none()
+        
+        if not service:
+            service = Service(name=name, service_type=service_type, identifier=identifier)
+            self.session.add(service)
+            await self.session.commit()
+            await self.session.refresh(service)
+        
+        return service
+    
+    async def record_restart(self, service_id: int):
+        """Record service restart"""
+        result = await self.session.execute(
+            select(Service).where(Service.id == service_id)
+        )
+        service = result.scalar_one_or_none()
+        if service:
+            service.last_restart = datetime.utcnow()
+            service.restart_count += 1
+            await self.session.commit()
+
+
+class RuleRepository:
+    """Manage rules"""
+    
+    def __init__(self, session: AsyncSession):
+        self.session = session
+    
+    async def get_enabled_rules(self) -> List[Rule]:
+        """Get all enabled rules"""
+        result = await self.session.execute(
+            select(Rule)
+            .where(Rule.enabled == True)
+            .order_by(Rule.priority)
+        )
+        return list(result.scalars().all())
