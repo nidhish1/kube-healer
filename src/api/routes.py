@@ -1,7 +1,9 @@
 """API routes"""
 import json
+import os
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -55,15 +57,24 @@ class StatsResponse(BaseModel):
 
 
 # Routes
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    """Root endpoint"""
-    return {
-        "service": "kube-healer",
-        "version": "1.0.0",
-        "status": "running",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    """Dashboard UI"""
+    dashboard_path = os.path.join(os.path.dirname(__file__), "dashboard.html")
+    
+    try:
+        with open(dashboard_path, 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        # Fallback to JSON if dashboard not found
+        return HTMLResponse(content="""
+            <html>
+                <body style="font-family: Arial; text-align: center; padding: 50px;">
+                    <h1>🛡️ Kube-Healer</h1>
+                    <p>Dashboard UI not found. Visit <a href="/docs">/docs</a> for API documentation.</p>
+                </body>
+            </html>
+        """)
 
 
 @app.get("/health")
